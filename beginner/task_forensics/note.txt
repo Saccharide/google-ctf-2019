@@ -1,1 +1,0 @@
-If you're on MacOS, you can rename .ntfs to .dmg
