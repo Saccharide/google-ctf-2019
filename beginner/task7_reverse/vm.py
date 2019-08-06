@@ -11,6 +11,8 @@ class VM:
     self.stack = []
 
   def step(self):
+    # http://emoji-t0anax
+    # print(self.stack)
     cur_ins = self.rom[self.instruction_pointer]
     self.instruction_pointer += 1
 
@@ -142,6 +144,7 @@ class VM:
   def xor(self):
     a = self.stack.pop()
     b = self.stack.pop()
+# print(" ", a)
     self.stack.append(b ^ a)
 
   OPERATIONS = {
