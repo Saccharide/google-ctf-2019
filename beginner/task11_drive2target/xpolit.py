@@ -3,11 +3,15 @@
 #import urllib
 #import urllib2
 import requests
+import re
 
 url = 'https://drivetothetarget.web.ctfcompetition.com/'
 normal_resp = requests.get(url).text
 
 
+def get_response(text):
+
+    return re.match(r"<p>.*</p>",text)[0]
 def extract_value(string, keyword):
     keyword+='" value="'
     substr = string.find(keyword)
@@ -16,51 +20,47 @@ def extract_value(string, keyword):
     end = temp.find('"')
     return string[total:end+total]
 
-lat = extract_value(normal_resp, 'lat')
-print(lat)
-lon = extract_value(normal_resp, 'lon')
-print(lon)
-token = extract_value(normal_resp, 'token')
-print(token)
-print("------------------------")
-#lat  = normal_resp.find('lat" value="')
-#lat +=12 
-##print(lat)
-#normal_resp = normal_resp[lat::]
-##print('After truncating...')
-##print('normal_resp = ', normal_resp)
-#value = normal_resp.find('"')
-##print('value = ', value)
-#print(normal_resp[:value])
-#lat = normal_resp[:value]
-#
-#lon = normal_resp.find('lon" value="')
-#lon +=12 
-#normal_resp = normal_resp[lon::]
-#value = normal_resp.find('"')
-#print(normal_resp[:value])
-#lon = normal_resp[:value]
-#
-#token = normal_resp.find('token" value="')
-#token +=14 
-#normal_resp = normal_resp[token::]
-#value = normal_resp.find('"')
-#print(normal_resp[:value])
-#token = normal_resp[:value]
-#
-#
-#print('')
-#print('-----------------------------')
-#print('BEGIN STEPPING')
-#print('-----------------------------')
+def drive(original_resp):
+    lat = extract_value(original_resp, 'lat')
+    lon = extract_value(original_resp, 'lon')
+    token = extract_value(original_resp, 'token')
+    data = {
+        'lat'   : lat,
+        'lon'   : lon,
+        'token' : token 
+    }
 
-data = {
-    'lat'   : lat,
-    'lon'   : lon,
-    'token' : token 
-}
+    resp = requests.get(url, params=data).text
+    print(get_response(resp))
+    return lat, lon, token, resp
 
-print(data)
-first_resp = requests.get(url, params=data)
+def load_prev(lat,lon,token):
+    data = {
+        'lat'   : lat,
+        'lon'   : lon,
+        'token' : token 
+    }
 
-print(first_resp.text)
+    resp = requests.get(url, params=data).text
+    print(get_response(resp))
+    return lat, lon, token, resp
+
+step = 0.0001
+direction = [
+    [1,0],
+    [-1,0],
+    [0,1],
+    [0,-1]
+]
+x = 0 
+while x == 0:
+    lat, lon, token, resp = drive(normal_resp)
+    if 'too fast' in resp:
+        step = 0.0001
+
+    elif 'getting closer' in resp:
+        step += 0.0001
+
+    elif 'getting away' in resp:
+        step += 0.0001
+    x+=1
